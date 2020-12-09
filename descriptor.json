@@ -10,26 +10,26 @@
       "name": "grpcHost",
       "type": "string",
       "required": true,
-      "value": "localhost",
+      "default": "localhost",
       "description": "gRPC host address"
     },
     {
       "name": "grpcPort",
       "type": "int",
       "required": true,
-      "value": 50051,
+      "default": 50051,
       "description": "gRPC port"
     },
     {
       "name": "enableTLS",
       "type": "boolean",
-      "value": false,
+      "default": false,
       "description": "true - To enable TLS (Transport Layer Security), false - No TLS security"
     },
     {
       "name": "caCertFile",
       "type": "string",
-      "value": "",
+      "default": "",
       "description": "CA cert file path"
     }
 
