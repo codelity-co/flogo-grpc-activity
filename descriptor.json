@@ -1,0 +1,96 @@
+{
+  "name": "flogo-grpc-activity",
+  "type": "flogo:activity",
+  "version": "0.1.0",
+  "title": "Codelity Flogo gRPC activity",
+  "description": "Codelity Flogo gRPC activity",
+  "homepage": "https://github.com/codelity-co/flogo-grpc-activity",
+  "settings": [
+    {
+      "name": "grpcHost",
+      "type": "string",
+      "required": true,
+      "value": "localhost",
+      "description": "gRPC host address"
+    },
+    {
+      "name": "grpcPort",
+      "type": "int",
+      "required": true,
+      "value": 50051,
+      "description": "gRPC port"
+    },
+    {
+      "name": "enableTLS",
+      "type": "boolean",
+      "value": false,
+      "description": "true - To enable TLS (Transport Layer Security), false - No TLS security"
+    },
+    {
+      "name": "caCertFile",
+      "type": "string",
+      "value": "",
+      "description": "CA cert file path"
+    }
+
+  ],
+  "input": [
+    {
+      "name": "grpcMethodParams",
+      "type": "object",
+      "required": true,
+      "description": "gRPC method params"
+    },
+    {
+      "name": "headers",
+      "type": "object",
+      "description": "gRPC headers"
+    },
+    {
+      "name": "serviceName",
+      "type": "string",
+      "required": true,
+      "description": "Name of the service"
+    },
+    {
+      "name": "protoName",
+      "type": "string",
+      "required": true,
+      "description": "Protobuf package name"
+    },
+    {
+      "name": "methodName",
+      "type": "string",
+      "required": true,
+      "description": "Name of the method"
+    },
+    {
+      "name": "params",
+      "type": "object",
+      "description": "gRPC params"
+    },
+    {
+      "name": "queryParams",
+      "type": "object",
+      "description": "gRPC query params"
+    },
+    {
+      "name": "content",
+      "type": "any",
+      "required": true,
+      "description": "Protobuf request"
+    },
+    {
+      "name": "pathParams",
+      "type": "object",
+      "description": "gRPC path params"
+    }
+  ],
+  "output": [
+    {
+      "name": "body",
+      "type": "any",
+      "description": "Output body"
+    }
+  ]
+}
