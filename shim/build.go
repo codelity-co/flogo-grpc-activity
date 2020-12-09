@@ -15,6 +15,7 @@ import (
 	"text/template"
 	"time"
 
+	//nolint:staticcheck
 	"github.com/golang/protobuf/protoc-gen-go/generator"
 )
 
@@ -519,7 +520,7 @@ func generatePbFiles(appPath, protoFileContent string, loc *ProtoLocat) error {
 
 	dir2Generate := filepath.Join(appPath, loc.GetLocation())
 	if _, err := os.Stat(dir2Generate); os.IsNotExist(err) {
-		os.MkdirAll(dir2Generate, 0775)
+		_ = os.MkdirAll(dir2Generate, 0775)
 	}
 
 	err = ioutil.WriteFile(filepath.Join(dir2Generate, loc.protoFileName), []byte(protoFileContent), 0644)
@@ -622,7 +623,7 @@ func getProtoData(protoContent string, protoFileName string, protoPath string, a
 func generateServiceImplFile(path string, pdArr []ProtoData, option string, loc *ProtoLocat) error {
 	_, fileErr := os.Stat(path)
 	if fileErr != nil {
-		os.MkdirAll(path, os.ModePerm)
+		_ = os.MkdirAll(path, os.ModePerm)
 	}
 	for _, pd := range pdArr {
 		connectorFile := filepath.Join(path, loc.GetLocation(), strings.Split(loc.protoFileName, ".")[0]+"."+pd.RegServiceName+"."+option+".grpcservice.go")

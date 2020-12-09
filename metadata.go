@@ -3,10 +3,10 @@ package grpc
 import "github.com/project-flogo/core/data/coerce"
 
 type Settings struct {
-	GrpcHost    string `md:"grpcHost"`
-	GrpcPort    int    `md:"grpcPort"`
-	EnableTLS   bool   `md:"enableTLS"`
-	CaCertFile  string `md:"caCertFile"`
+	GrpcHost   string `md:"grpcHost"`
+	GrpcPort   int    `md:"grpcPort"`
+	EnableTLS  bool   `md:"enableTLS"`
+	ClientCert string `md:"clientCert"`
 }
 
 func (s *Settings) FromMap(values map[string]interface{}) error {
@@ -27,7 +27,7 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 		return err
 	}
 
-	s.CaCertFile, err = coerce.ToString(values["caCertFile"])
+	s.ClientCert, err = coerce.ToString(values["clientCert"])
 	if err != nil {
 		return err
 	}
@@ -37,10 +37,10 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 
 func (s *Settings) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"grpcHost": s.GrpcHost,
-		"grpcPort": s.GrpcPort,
-		"enableTLS": s.EnableTLS,
-		"caCertFile": s.CaCertFile,
+		"grpcHost":   s.GrpcHost,
+		"grpcPort":   s.GrpcPort,
+		"enableTLS":  s.EnableTLS,
+		"clientCert": s.ClientCert,
 	}
 }
 
@@ -58,7 +58,7 @@ type Input struct {
 
 func (i *Input) FromMap(values map[string]interface{}) error {
 	var err error
-	
+
 	i.ProtoName, err = coerce.ToString(values["protoName"])
 	if err != nil {
 		return err
@@ -80,14 +80,14 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 func (i *Input) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"grpcMethodParams": i.GrpcMethodParams,
-		"headers": i.Headers,
-		"serviceName": i.ServiceName,
-		"protoName": i.ProtoName,
-		"methodName": i.MethodName,
-		"params": i.Params,
-		"queryParams": i.QueryParams,
-		"content": i.Content,
-		"pathParams": i.PathParams,
+		"headers":          i.Headers,
+		"serviceName":      i.ServiceName,
+		"protoName":        i.ProtoName,
+		"methodName":       i.MethodName,
+		"params":           i.Params,
+		"queryParams":      i.QueryParams,
+		"content":          i.Content,
+		"pathParams":       i.PathParams,
 	}
 }
 

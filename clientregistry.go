@@ -2,6 +2,7 @@ package grpc
 
 import (
 	//used for generated stub files
+	//nolint:staticcheck
 	_ "github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 )

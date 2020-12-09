@@ -9,6 +9,7 @@ import (
 	"github.com/project-flogo/core/data/property"
 	"github.com/project-flogo/core/data/resolve"
 	"github.com/project-flogo/core/support/log"
+	"github.com/project-flogo/core/data/coerce"
 
 	"encoding/json"
 	"fmt"
@@ -16,9 +17,14 @@ import (
 	"strings"
 	"errors"
 	"reflect"
+	"encoding/base64"
+	"io/ioutil"
+	"crypto/x509"
+	"os"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -41,6 +47,8 @@ func init() {
 //New optional factory method, should be used if one activity instance per configuration is desired
 func New(ctx activity.InitContext) (activity.Activity, error) {
 
+	logger := ctx.Logger()
+
 	s := &Settings{}
 	sConfig, err := resolveObject(ctx.Settings())
 	if err != nil {
@@ -52,11 +60,39 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 		return nil, err
 	}
 
-	// ctx.Logger().Debugf("Setting: %s", s.ASetting)
+	logger.Debugf("Setting: %s", s)
 
 	act := &Activity{
 		activitySettings: s,
-	} //add aSetting to instance
+	} 
+
+	var opts []grpc.DialOption
+	logger.Debug("enableTLS: ", s.EnableTLS)
+	if s.EnableTLS {
+		logger.Debug("ClientCert: ", s.ClientCert)
+		certificates, err := act.decodeClientCertificate(logger)
+		if err != nil {
+			return act, err
+		}
+
+		cp := x509.NewCertPool()
+		if !cp.AppendCertsFromPEM(certificates) {
+			return act, fmt.Errorf("credentials: failed to append certificates")
+		}
+		opts = []grpc.DialOption{grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(cp, ""))}
+
+	} else {
+
+		opts = []grpc.DialOption{grpc.WithInsecure()}
+
+	}
+
+	conn, err := getConnection(fmt.Sprintf("%v:%v", s.GrpcHost, s.GrpcPort), logger, opts)
+	if err != nil {
+		return act, err
+	}
+
+	act.connection = conn
 
 	return act, nil
 }
@@ -64,6 +100,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 // Activity is an sample Activity that can be used as a base to create a custom activity
 type Activity struct {
 	activitySettings *Settings
+	connection *grpc.ClientConn
 }
 
 // Metadata returns the activity's metadata
@@ -108,7 +145,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 
 		if strings.Compare(k, protoName+serviceName) == 0 {
 			logger.Debugf("client service object found for proto [%v] and service [%v]", protoName, serviceName)
-			clientInterfaceObj = service.GetRegisteredClientService(conn)
+			clientInterfaceObj = service.GetRegisteredClientService(a.connection)
 			clServFlag = true
 		}
 
@@ -206,6 +243,63 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	}
 
 	return true, nil
+}
+
+func (a *Activity) decodeClientCertificate(logger log.Logger) ([]byte, error) {
+
+	cert := a.activitySettings.ClientCert
+	if cert == "" {
+		return nil, fmt.Errorf("Certificate is Empty")
+	}
+
+	// case 1: if certificate comes from fileselctor it will be base64 encoded
+	if strings.HasPrefix(cert, "{") {
+		logger.Debug("Certificate received from file selector")
+		certObj, err := coerce.ToObject(cert)
+		if err == nil {
+			certValue, ok := certObj["content"].(string)
+			if !ok || certValue == "" {
+				return nil, fmt.Errorf("No content found for certificate")
+			}
+			return base64.StdEncoding.DecodeString(strings.Split(certValue, ",")[1])
+		}
+		return nil, err
+	}
+
+	// case 2: if the certificate is defined as application property in the format "<encoding>,<encodedCertificateValue>"
+	index := strings.IndexAny(cert, ",")
+	if index > -1 {
+		//some encoding is there
+		logger.Debug("Certificate received from application property with encoding")
+		encoding := cert[:index]
+		certValue := cert[index+1:]
+
+		if strings.EqualFold(encoding, "base64") {
+			return base64.StdEncoding.DecodeString(certValue)
+		}
+		return nil, fmt.Errorf("Error parsing the certificate or given encoding may not be supported")
+	}
+
+	// case 3: if the certificate is defined as application property that points to a file
+	if strings.HasPrefix(cert, "file://") {
+		// app property pointing to a file
+		logger.Debug("Certificate received from application property pointing to a file")
+		fileName := cert[7:]
+		return ioutil.ReadFile(fileName)
+	}
+
+	// case 4: if certificate is defined as path to a file (in oss)
+	if strings.Contains(cert, "/") || strings.Contains(cert, "\\") {
+		logger.Debug("Certificate received from settings as file path")
+		_, err := os.Stat(cert)
+		if err != nil {
+			logger.Errorf("Cannot find certificate file: %s", err.Error())
+		}
+		return ioutil.ReadFile(cert)
+	}
+
+	logger.Debug("Certificate received from application property without encoding")
+	return []byte(cert), nil
 }
 
 // getconnection returns single client connection object per hostaddress
