@@ -1,34 +1,32 @@
 package grpc
 
 import (
-
 	"github.com/project-flogo/core/activity"
 
 	"github.com/project-flogo/core/data"
+	"github.com/project-flogo/core/data/coerce"
 	"github.com/project-flogo/core/data/mapper"
 	"github.com/project-flogo/core/data/property"
 	"github.com/project-flogo/core/data/resolve"
 	"github.com/project-flogo/core/support/log"
-	"github.com/project-flogo/core/data/coerce"
 
-	"encoding/json"
-	"fmt"
 	"context"
-	"strings"
-	"errors"
-	"reflect"
-	"encoding/base64"
-	"io/ioutil"
 	"crypto/x509"
+	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io/ioutil"
 	"os"
+	"reflect"
+	"strings"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 
 	"github.com/mitchellh/mapstructure"
 )
-
 
 var activityMd = activity.ToMetadata(&Settings{}, &Input{}, &Output{})
 var resolver = resolve.NewCompositeResolver(map[string]resolve.Resolver{
@@ -52,7 +50,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	s := &Settings{}
 	sConfig, err := resolveObject(ctx.Settings())
 	if err != nil {
-		 return nil, err
+		return nil, err
 	}
 
 	err = s.FromMap(sConfig)
@@ -64,7 +62,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	act := &Activity{
 		activitySettings: s,
-	} 
+	}
 
 	var opts []grpc.DialOption
 	logger.Debug("enableTLS: ", s.EnableTLS)
@@ -100,7 +98,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 // Activity is an sample Activity that can be used as a base to create a custom activity
 type Activity struct {
 	activitySettings *Settings
-	connection *grpc.ClientConn
+	connection       *grpc.ClientConn
 }
 
 // Metadata returns the activity's metadata
@@ -114,6 +112,8 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	logger := ctx.Logger()
 
 	input := &Input{}
+	input.GrpcMethodParams = make(map[string]interface{})
+
 	err = ctx.GetInputObject(input)
 	if err != nil {
 		logger.Error(err)
