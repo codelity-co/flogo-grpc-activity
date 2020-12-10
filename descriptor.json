@@ -27,12 +27,11 @@
       "description": "true - To enable TLS (Transport Layer Security), false - No TLS security"
     },
     {
-      "name": "caCertFile",
+      "name": "clientCert",
       "type": "string",
       "default": "",
-      "description": "CA cert file path"
+      "description": "Client cert file path"
     }
-
   ],
   "input": [
     {
