@@ -191,6 +191,9 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 				inputs = append(inputs, reflect.ValueOf(grpc.Header(&md)))
 			}
 
+			logger.Debugf("clientInterfaceObject: %v", clientInterfaceObj)
+			logger.Debugf("MethodName: %v", methodName)
+
 			resultArr := reflect.ValueOf(clientInterfaceObj).MethodByName(methodName).Call(inputs)
 
 			res := resultArr[0]
