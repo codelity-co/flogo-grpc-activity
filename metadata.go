@@ -3,21 +3,15 @@ package grpc
 import "github.com/project-flogo/core/data/coerce"
 
 type Settings struct {
-	GrpcHost   string `md:"grpcHost"`
-	GrpcPort   int    `md:"grpcPort"`
-	EnableTLS  bool   `md:"enableTLS"`
-	ClientCert string `md:"clientCert"`
+	GrpcHostAddress string `md:"grpcHostAddress"`
+	EnableTLS       bool   `md:"enableTLS"`
+	ClientCert      string `md:"clientCert"`
 }
 
 func (s *Settings) FromMap(values map[string]interface{}) error {
 	var err error
 
-	s.GrpcHost, err = coerce.ToString(values["grpcHost"])
-	if err != nil {
-		return err
-	}
-
-	s.GrpcPort, err = coerce.ToInt(values["grpcPort"])
+	s.GrpcHostAddress, err = coerce.ToString(values["grpcHostAddress"])
 	if err != nil {
 		return err
 	}
@@ -37,10 +31,9 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 
 func (s *Settings) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"grpcHost":   s.GrpcHost,
-		"grpcPort":   s.GrpcPort,
-		"enableTLS":  s.EnableTLS,
-		"clientCert": s.ClientCert,
+		"grpcHostAddress": s.GrpcHostAddress,
+		"enableTLS":       s.EnableTLS,
+		"clientCert":      s.ClientCert,
 	}
 }
 
