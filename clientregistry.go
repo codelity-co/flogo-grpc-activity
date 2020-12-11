@@ -2,6 +2,7 @@ package grpc
 
 import (
 	//used for generated stub files
+	"fmt"
 	//nolint:staticcheck
 	_ "github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
@@ -35,6 +36,9 @@ func NewServiceRegistry() *ServiceRegistry {
 
 // RegisterClientService resgisters service
 func (sr *ServiceRegistry) RegisterClientService(service ClientService) {
+	fmt.Println("*****")
+	fmt.Println(fmt.Sprintf("ProtoName: %v", service.ServiceInfo().ProtoName))
+	fmt.Println(fmt.Sprintf("ServiceName: %v", service.ServiceInfo().ServiceName))
 	sr.ClientServices[service.ServiceInfo().ProtoName+service.ServiceInfo().ServiceName] = service
 }
 
