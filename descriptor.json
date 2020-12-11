@@ -1,24 +1,17 @@
 {
   "name": "flogo-grpc-activity",
   "type": "flogo:activity",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "title": "Codelity Flogo gRPC activity",
   "description": "Codelity Flogo gRPC activity",
   "homepage": "https://github.com/codelity-co/flogo-grpc-activity",
   "settings": [
     {
-      "name": "grpcHost",
+      "name": "grpcHostUrl",
       "type": "string",
       "required": true,
-      "default": "localhost",
+      "default": "tcp://localhost:50051",
       "description": "gRPC host address"
-    },
-    {
-      "name": "grpcPort",
-      "type": "int",
-      "required": true,
-      "default": 50051,
-      "description": "gRPC port"
     },
     {
       "name": "enableTLS",

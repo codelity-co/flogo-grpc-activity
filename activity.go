@@ -37,7 +37,7 @@ var resolver = resolve.NewCompositeResolver(map[string]resolve.Resolver{
 })
 
 func init() {
-	_ = activity.Register(&Activity{}) //activity.Register(&Activity{}, New) to create instances using factory method 'New'
+	_ = activity.Register(&Activity{}, New)
 }
 
 //New optional factory method, should be used if one activity instance per configuration is desired
@@ -83,7 +83,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	}
 
-	conn, err := getConnection(fmt.Sprintf("%v:%v", s.GrpcHost, s.GrpcPort), logger, opts)
+	conn, err := getConnection(s.GrpcHostAddress, logger, opts)
 	if err != nil {
 		return nil, err
 	}
