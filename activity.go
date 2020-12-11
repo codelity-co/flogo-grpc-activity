@@ -85,7 +85,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	conn, err := getConnection(fmt.Sprintf("%v:%v", s.GrpcHost, s.GrpcPort), logger, opts)
 	if err != nil {
-		return act, err
+		return nil, err
 	}
 
 	act.connection = conn
