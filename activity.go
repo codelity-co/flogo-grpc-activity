@@ -118,7 +118,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		return true, err
 	}
 
-	output := Output{}
+	output := &Output{}
 
 	logger.Debugf("Input: %s", input)
 
@@ -205,6 +205,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 			logger.Debugf("MethodName: %v", methodName)
 
 			resultArr := reflect.ValueOf(clientInterfaceObj).MethodByName(methodName).Call(inputs)
+			logger.Debugf("resultArr: %v", resultArr)
 
 			res := resultArr[0]
 			grpcErr := resultArr[1]
@@ -224,6 +225,10 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 				}
 			} else {
 				output.Body = res.Interface()
+				err = ctx.SetOutputObject(output)
+				if err != nil {
+					return true, err
+				}
 			}
 
 		} else {
@@ -240,6 +245,10 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 				erroString := fmt.Sprintf("%v", resMap["Error"])
 				erroString = "{\"error\":\"true\",\"details\":{\"error\":\"" + erroString + "\"}}"
 				err := json.Unmarshal([]byte(erroString), &output.Body)
+				if err != nil {
+					return true, err
+				}
+				err = ctx.SetOutputObject(output)
 				if err != nil {
 					return true, err
 				}
