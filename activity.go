@@ -36,8 +36,6 @@ var resolver = resolve.NewCompositeResolver(map[string]resolve.Resolver{
 	"loop":     &resolve.LoopResolver{},
 })
 
-var clientInterfaceObj interface{}
-
 func init() {
 	_ = activity.Register(&Activity{}) //activity.Register(&Activity{}, New) to create instances using factory method 'New'
 }
@@ -143,9 +141,12 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 
 	for k, service := range ClientServiceRegistery.ClientServices {
 
+		var clientInterfaceObj interface{}
+
 		if strings.Compare(k, protoName+serviceName) == 0 {
 			logger.Debugf("client service object found for proto [%v] and service [%v]", protoName, serviceName)
 			clientInterfaceObj = service.GetRegisteredClientService(a.connection)
+			logger.Debugf("clientInterfaceObj: %v", clientInterfaceObj)
 			clServFlag = true
 		}
 
@@ -154,6 +155,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		var throwError bool
 
 		if len(requests) > 0 {
+			logger.Debug("Preparing grpcMethodParams contextdata...")
 			//For flogo case where all data comes from flogo.json
 			md := metadata.New(input.Headers)
 			input.GrpcMethodParams["contextdata"] = metadata.NewOutgoingContext(context.Background(), md)
@@ -161,13 +163,19 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		}
 
 		if input.GrpcMethodParams["contextdata"] != nil {
+			logger.Debug("RPC call (not streaming)")
 
 			inputs := make([]reflect.Value, 2)
+
+			logger.Debug("Obtaining contextdata")
 			inputs[0] = reflect.ValueOf(input.GrpcMethodParams["contextdata"])
 
+			logger.Debug("Obtaining reqdata...")
 			if reqData, ok := input.GrpcMethodParams["reqdata"]; ok {
+				logger.Debug("Obtaining reqdata directly...")
 				inputs[1] = reflect.ValueOf(reqData)
 			} else {
+				logger.Debug("Obtaining reqdata dynamically...")
 				inputData := make(map[string]interface{})
 				for k, v := range input.GrpcMethodParams {
 					if k == "serviceName" || k == "protoName" || k == "contextdata" || k == "reqdata" || k == "methodName" {
@@ -175,6 +183,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 					}
 					inputData[k] = v
 				}
+				logger.Debug("Preparin gRPC request...")
 				request := GetRequest(protoName + "-" + serviceName + "-" + methodName)
 				if request != nil {
 					err := mapstructure.Decode(inputData, request)
@@ -187,6 +196,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 			}
 
 			if len(input.Headers) > 0 {
+				logger.Debug("Preparin gRPC request headers...")
 				md := metadata.New(input.Headers)
 				inputs = append(inputs, reflect.ValueOf(grpc.Header(&md)))
 			}
