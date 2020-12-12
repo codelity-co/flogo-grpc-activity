@@ -220,7 +220,10 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 					erroString = "{\"error\":\"true\",\"details\":{\"error\":\"" + erroString + "\"}}"
 					err := json.Unmarshal([]byte(erroString), &output.Body)
 					if err != nil {
-						err = ctx.SetOutputObject(output)
+						return true, err
+					}
+					err = ctx.SetOutputObject(output)
+					if err != nil {
 						return true, err
 					}
 				}
