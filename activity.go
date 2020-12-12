@@ -222,6 +222,10 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 					if err != nil {
 						return true, err
 					}
+					err = ctx.SetOutputObject(output)
+					if err != nil {
+						return true, err
+					}
 				}
 			} else {
 				output.Body = res.Interface()
