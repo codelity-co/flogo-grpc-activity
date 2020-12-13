@@ -415,9 +415,8 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 						protoMap[string(protoContent)] = loc
 					} else {
 						// text box
-						protoFileName := act.ActivityCfgRep.Settings["protoName"].(string) + ".proto"
-						loc.protoFileName = protoFileName
-						protoContent = []byte(act.ActivityCfgRep.Settings["protoFile"].(string))
+						loc.protoFileName = act.ActivityCfgRep.Settings["protoName"].(string) + ".proto"
+						protoContent = ioutil.ReadFile(settings["protoFile"].(string))
 						protoMap[string(protoContent)] = loc
 					}
 				}
@@ -468,7 +467,11 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 func GenerateSupportFiles(path string, protoMap map[string]*ProtoLocat) error {
 
 	log.Println("Generating pb files...")
+	log.Infof("protoMap: %v", protoMap)
 	for k, v := range protoMap {
+		log.Infof("k: %v", k)
+		log.Infof("v: %v", v)
+		log.Infof("path: %v", path)
 		err := generatePbFiles(path, k, v)
 		if err != nil {
 			return err
