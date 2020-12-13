@@ -51,6 +51,12 @@
       "description": "Protobuf package name"
     },
     {
+      "name": "protoFile",
+      "type": "string",
+      "required": true,
+      "description": "Protobuf file path"
+    },
+    {
       "name": "methodName",
       "type": "string",
       "required": true,
