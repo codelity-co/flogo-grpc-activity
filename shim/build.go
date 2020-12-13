@@ -534,7 +534,7 @@ func generatePbFiles(appPath, protoFileContent string, loc *ProtoLocat) error {
 		return err
 	}
 	// execute protoc command
-	err = Exec(dir2Generate, "protoc", "-I", "$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/",-I, dir2Generate, filepath.Join(dir2Generate, loc.protoFileName), "--go_out="+dir2Generate)
+	err = Exec(dir2Generate, "protoc", "-I", "$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/", "-I", dir2Generate, filepath.Join(dir2Generate, loc.protoFileName), "--go_out="+dir2Generate)
 	if err != nil {
 		return err
 	}
