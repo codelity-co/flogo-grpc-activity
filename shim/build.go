@@ -416,7 +416,7 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 					} else {
 						// text box
 						loc.protoFileName = act.ActivityCfgRep.Settings["protoName"].(string) + ".proto"
-						protoContent, err = ioutil.ReadFile(settings["protoFile"].(string))
+						protoContent, err = ioutil.ReadFile(act.ActivityCfgRep.Settings["protoFile"].(string))
 						if err != nil {
 							panic(fmt.Errorf("Error reading json file: %s", err.Error()))
 						}
