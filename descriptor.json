@@ -24,6 +24,18 @@
       "type": "string",
       "default": "",
       "description": "Client cert file path"
+    },
+    {
+      "name": "protoName",
+      "type": "string",
+      "required": true,
+      "description": "Protobuf package name"
+    },
+    {
+      "name": "protoFile",
+      "type": "string",
+      "required": true,
+      "description": "Protobuf file path"
     }
   ],
   "input": [
@@ -43,18 +55,6 @@
       "type": "string",
       "required": true,
       "description": "Name of the service"
-    },
-    {
-      "name": "protoName",
-      "type": "string",
-      "required": true,
-      "description": "Protobuf package name"
-    },
-    {
-      "name": "protoFile",
-      "type": "string",
-      "required": true,
-      "description": "Protobuf file path"
     },
     {
       "name": "methodName",

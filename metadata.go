@@ -6,6 +6,8 @@ type Settings struct {
 	GrpcHostAddress string `md:"grpcHostAddress"`
 	EnableTLS       bool   `md:"enableTLS"`
 	ClientCert      string `md:"clientCert"`
+	ProtoName       string `md:"protoName"`
+	ProtoFile       string `md:"protoFile"`
 }
 
 func (s *Settings) FromMap(values map[string]interface{}) error {
@@ -26,6 +28,16 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 		return err
 	}
 
+	s.ProtoName, err = coerce.ToString(values["protoName"])
+	if err != nil {
+		return err
+	}
+
+	s.ProtoFile, err = coerce.ToString(values["protoFile"])
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -34,6 +46,8 @@ func (s *Settings) ToMap() map[string]interface{} {
 		"grpcHostAddress": s.GrpcHostAddress,
 		"enableTLS":       s.EnableTLS,
 		"clientCert":      s.ClientCert,
+		"protoName":       s.ProtoName,
+		"protoFile":       s.ProtoFile,
 	}
 }
 
@@ -41,8 +55,6 @@ type Input struct {
 	GrpcMethodParams map[string]interface{} `md:"grpcMethodParams"`
 	Headers          map[string]string      `md:"headers"`
 	ServiceName      string                 `md:"serviceName"`
-	ProtoName        string                 `md:"protoName"`
-	ProtoFile        string                 `md:"protoFile"`
 	MethodName       string                 `md:"methodName"`
 	Params           map[string]string      `md:"params"`
 	QueryParams      map[string]string      `md:"queryParams"`
@@ -52,16 +64,6 @@ type Input struct {
 
 func (i *Input) FromMap(values map[string]interface{}) error {
 	var err error
-
-	i.ProtoName, err = coerce.ToString(values["protoName"])
-	if err != nil {
-		return err
-	}
-
-	i.ProtoFile, err = coerce.ToString(values["protoFile"])
-	if err != nil {
-		return err
-	}
 
 	i.ServiceName, err = coerce.ToString(values["serviceName"])
 	if err != nil {
@@ -81,8 +83,6 @@ func (i *Input) ToMap() map[string]interface{} {
 		"grpcMethodParams": i.GrpcMethodParams,
 		"headers":          i.Headers,
 		"serviceName":      i.ServiceName,
-		"protoName":        i.ProtoName,
-		"protoFile":        i.ProtoFile,
 		"methodName":       i.MethodName,
 		"params":           i.Params,
 		"queryParams":      i.QueryParams,

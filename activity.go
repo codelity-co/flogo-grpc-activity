@@ -123,7 +123,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	logger.Debugf("Input: %s", input)
 
 	serviceName := input.ServiceName
-	protoName := strings.Split(input.ProtoName, ".")[0]
+	protoName := strings.Split(a.activitySettings.ProtoName, ".")[0]
 
 	if len(serviceName) == 0 && len(protoName) == 0 {
 		err = errors.New("Service name and Proto name required")
