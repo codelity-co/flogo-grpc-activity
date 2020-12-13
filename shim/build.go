@@ -420,7 +420,7 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 						if err != nil {
 							panic(fmt.Errorf("Error reading json file: %s", err.Error()))
 						}
-						protoMap[string(protoContent)] = loc
+						protoMap[act.ActivityCfgRep.Settings["protoName"].(string)] = loc
 					}
 				}
 			}
@@ -534,7 +534,7 @@ func generatePbFiles(appPath, protoFileContent string, loc *ProtoLocat) error {
 		return err
 	}
 	// execute protoc command
-	err = Exec(dir2Generate, "protoc", "-I", dir2Generate, filepath.Join(dir2Generate, loc.protoFileName), "--go_out=plugins=grpc,import_path="+loc.activityName+":"+dir2Generate)
+	err = Exec(dir2Generate, "protoc", "-I", "$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/",-I, dir2Generate, filepath.Join(dir2Generate, loc.protoFileName), "--go_out="+dir2Generate)
 	if err != nil {
 		return err
 	}
