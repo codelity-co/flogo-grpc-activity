@@ -417,7 +417,10 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 						protoFileName := act.ActivityCfgRep.Settings["protoName"].(string) + ".proto"
 						loc.protoFileName = protoFileName
 
-						protoContent = []byte(act.ActivityCfgRep.Settings["protoFile"].(string))
+						protoContent, err = ioutil.ReadFile((act.ActivityCfgRep.Settings["protoFile"].(string))
+						if err != nil {
+							panic(err)
+						}
 						protoMap[string(protoContent)] = loc
 					}
 				}
