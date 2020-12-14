@@ -494,26 +494,26 @@ func GenerateSupportFiles(path string, protoMap map[string]*ProtoLocat) error {
 	log.Println("Generating pb files...")
 	for k, v := range protoMap {
 
-		err := generatePbFiles(path, k, v)
+		// err := generatePbFiles(path, k, v)
+		// if err != nil {
+		// 	return err
+		// }
+
+		log.Println("Getting proto data...")
+		pdArr, err := getProtoData(string(v.protoContent), v.protoFileName, filepath.Join(path, v.flowName, v.activityName), v.activityName)
 		if err != nil {
 			return err
 		}
 
-		// log.Println("Getting proto data...")
-		// pdArr, err := getProtoData(string(v.protoContent), v.protoFileName, filepath.Join(path, v.flowName, v.activityName), v.activityName)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// log.Println("pdArr: %v", pdArr)
+		log.Println("pdArr: %v", pdArr)
 
 		// refactoring streaming methods and unary methods
-		// pdArr = arrangeProtoData(pdArr)
+		pdArr = arrangeProtoData(pdArr)
 		fmt.Println("Creating client support files...")
-		// err = generateServiceImplFile(path, pdArr, "client", v)
-		// if err != nil {
-		// 	return err
-		// }
+		err = generateServiceImplFile(path, pdArr, "grpcclient", v)
+		if err != nil {
+			return err
+		}
 
 		log.Println("Support files created.")
 	}
@@ -541,30 +541,30 @@ func Exec(dirToGenerate, name string, arg ...string) error {
 	return nil
 }
 
-// generatePbFiles generates stub file based on given proto
-func generatePbFiles(appPath, protoName string, loc *ProtoLocat) error {
-	_, err := exec.LookPath("protoc")
-	if err != nil {
-		return fmt.Errorf("Protoc is not available: %s", err.Error())
-	}
+// // generatePbFiles generates stub file based on given proto
+// func generatePbFiles(appPath, protoName string, loc *ProtoLocat) error {
+// 	_, err := exec.LookPath("protoc")
+// 	if err != nil {
+// 		return fmt.Errorf("Protoc is not available: %s", err.Error())
+// 	}
 
-	dir2Generate := filepath.Join(appPath, loc.GetLocation())
-	if _, err := os.Stat(dir2Generate); os.IsNotExist(err) {
-		_ = os.MkdirAll(dir2Generate, 0775)
-	}
+// 	dir2Generate := filepath.Join(appPath, loc.GetLocation())
+// 	if _, err := os.Stat(dir2Generate); os.IsNotExist(err) {
+// 		_ = os.MkdirAll(dir2Generate, 0775)
+// 	}
 
-	err = ioutil.WriteFile(filepath.Join(dir2Generate, loc.protoFileName), loc.protoContent, 0644)
-	if err != nil {
-		return err
-	}
+// 	err = ioutil.WriteFile(filepath.Join(dir2Generate, loc.protoFileName), loc.protoContent, 0644)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	// execute protoc command
-	err = Exec(dir2Generate, "protoc", "-I", "$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/", "-I", dir2Generate, filepath.Join(dir2Generate, loc.protoFileName), "--go_out="+dir2Generate)
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// 	// execute protoc command
+// 	err = Exec(dir2Generate, "protoc", "-I", "$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/", "-I", dir2Generate, filepath.Join(dir2Generate, loc.protoFileName), "--go_out="+dir2Generate)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
 // arrangeProtoData refactors different types of methods from all method info list
 func arrangeProtoData(pdArr []ProtoData) []ProtoData {
