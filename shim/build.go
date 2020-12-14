@@ -317,7 +317,7 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("m: %v", m))
 
-	Generate support files
+	// Generate support files
 	err = GenerateSupportFiles(appPath, m)
 	if err != nil {
 		panic(err)
@@ -553,12 +553,10 @@ func generatePbFiles(appPath, protoName string, loc *ProtoLocat) error {
 		_ = os.MkdirAll(dir2Generate, 0775)
 	}
 
-
 	err = ioutil.WriteFile(filepath.Join(dir2Generate, loc.protoFileName), loc.protoContent, 0644)
 	if err != nil {
 		return err
 	}
-	
 
 	// execute protoc command
 	err = Exec(dir2Generate, "protoc", "-I", "$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/", "-I", dir2Generate, filepath.Join(dir2Generate, loc.protoFileName), "--go_out="+dir2Generate)
