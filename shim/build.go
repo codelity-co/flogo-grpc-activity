@@ -339,6 +339,7 @@ type resource struct {
 }
 
 type ProtoLocat struct {
+	protoName            string
 	protoFileName        string
 	flowName             string
 	activityName         string
@@ -414,8 +415,8 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 					//Get protco file
 					loc := &ProtoLocat{flowName: strings.ToLower(v.Data.Name), activityName: strings.ToLower(act.Name)}
 					if _, exists := protoMap[act.ActivityCfgRep.Settings["protoName"].(string)]; !exists {
-						protoName := act.ActivityCfgRep.Settings["protoName"].(string)
-						loc.protoFileName = protoName + ".proto"
+						loc.protoName = act.ActivityCfgRep.Settings["protoName"].(string)
+						loc.protoFileName = loc.protoName + ".proto"
 						if protoF, okk := act.ActivityCfgRep.Settings["protoFile"].(map[string]interface{}); okk {
 							loc.protoFileContentType = "content"
 							// decode protoFile content
@@ -429,7 +430,7 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 								panic("Error in proto content")
 							}
 							loc.protoContent = protoContent
-							protoMap[protoName] = loc
+							protoMap[loc.protoName] = loc
 						} else {
 							loc.protoFileContentType = "file"
 							protoContent, err = ioutil.ReadFile(act.ActivityCfgRep.Settings["protoFile"].(string))
@@ -437,7 +438,7 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 								panic(err)
 							}
 							loc.protoContent = protoContent
-							protoMap[protoName] = loc
+							protoMap[loc.protoName] = loc
 						}
 					}
 
@@ -455,8 +456,8 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 						//Get protco file
 						loc := &ProtoLocat{flowName: strings.ToLower(v.Data.Name), activityName: strings.ToLower(act.Name)}
 						if _, exists := protoMap[act.ActivityCfgRep.Settings["protoName"].(string)]; !exists {
-							protoName := act.ActivityCfgRep.Settings["protoName"].(string)
-							loc.protoFileName = protoName + ".proto"
+							loc.protoName := act.ActivityCfgRep.Settings["protoName"].(string)
+							loc.protoFileName = loc.protoName + ".proto"
 							if protoF, okk := act.ActivityCfgRep.Settings["protoFile"].(map[string]interface{}); okk {
 								// decode protoFile content
 								protoContentValue := protoF["content"].(string)
@@ -467,14 +468,14 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 									panic("Error in proto content")
 								}
 								loc.protoContent = protoContent
-								protoMap[protoName] = loc
+								protoMap[loc.protoName] = loc
 							} else {
 								protoContent, err = ioutil.ReadFile(act.ActivityCfgRep.Settings["protoFile"].(string))
 								if err != nil {
 									panic(err)
 								}
 								loc.protoContent = protoContent
-								protoMap[protoName] = loc
+								protoMap[loc.protoName] = loc
 							}
 						}
 
