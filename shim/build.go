@@ -406,7 +406,8 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 					//Get protco file
 					loc := &ProtoLocat{flowName: strings.ToLower(v.Data.Name), activityName: strings.ToLower(act.Name)}
 					if _, exists := protoMap[act.ActivityCfgRep.Settings["protoName"].(string)]; !exists {
-						loc.protoFileName := act.ActivityCfgRep.Settings["protoName"].(string) + ".proto"
+						protoName := act.ActivityCfgRep.Settings["protoName"].(string)
+						loc.protoFileName = protoName + ".proto"
 						if protoF, okk := act.ActivityCfgRep.Settings["protoFile"].(map[string]interface{}); okk {
 							loc.protoFileContentType = "content"
 							// decode protoFile content
@@ -445,32 +446,30 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 					if app.GetRef(act.ActivityCfgRep.Ref[1:]) == GRPC_CLIENT_REF {
 						//Get protco file
 						loc := &ProtoLocat{flowName: strings.ToLower(v.Data.Name), activityName: strings.ToLower(act.Name)}
-						if protoF, okk := act.ActivityCfgRep.Settings["protoFile"].(map[string]interface{}); okk {
-							// file picker
-							loc.protoFileName = protoF["filename"].(string) + ".proto"
-
-							// decode protoFile content
-							protoContentValue := protoF["content"].(string)
-							index := strings.IndexAny(protoContentValue, ",")
-							if index > -1 {
-								protoContent, _ = base64.StdEncoding.DecodeString(protoContentValue[index+1:])
+						if _, exists := protoMap[act.ActivityCfgRep.Settings["protoName"].(string)]; !exists {
+							protoName := act.ActivityCfgRep.Settings["protoName"].(string)
+							loc.protoFileName = protoName + ".proto"
+							if protoF, okk := act.ActivityCfgRep.Settings["protoFile"].(map[string]interface{}); okk {
+								// decode protoFile content
+								protoContentValue := protoF["content"].(string)
+								index := strings.IndexAny(protoContentValue, ",")
+								if index > -1 {
+									protoContent, _ = base64.StdEncoding.DecodeString(protoContentValue[index+1:])
+								} else {
+									panic("Error in proto content")
+								}
+								loc.protoContent = protoContent
+								protoMap[protoName] = loc
 							} else {
-								panic("Error in proto content")
+								protoContent, err = ioutil.ReadFile(act.ActivityCfgRep.Settings["protoFile"].(string))
+								if err != nil {
+									panic(err)
+								}
+								loc.protoContent = protoContent
+								protoMap[protoName] = loc
 							}
-
-							loc.protoContent = protoContent
-							protoMap[loc.protoFileName] = loc
-						} else {
-							// text box
-							loc.protoFileName := act.ActivityCfgRep.Settings["protoName"].(string) + ".proto"
-
-							protoContent, err = ioutil.ReadFile(act.ActivityCfgRep.Settings["protoFile"].(string))
-							if err != nil {
-								panic(err)
-							}
-							loc.protoContent = protoContent
-							protoMap[protoFileName] = loc
 						}
+
 					}
 				}
 			}
