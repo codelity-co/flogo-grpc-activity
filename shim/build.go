@@ -317,11 +317,11 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("m: %v", m))
 
-	// Generate support files
-	// err = GenerateSupportFiles(appPath, m)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	Generate support files
+	err = GenerateSupportFiles(appPath, m)
+	if err != nil {
+		panic(err)
+	}
 
 	// cleanup build.go, shim_support.go and <fileName>.proto
 	// os.Remove(filepath.Join(appPath, "build.go"))
@@ -494,26 +494,26 @@ func GenerateSupportFiles(path string, protoMap map[string]*ProtoLocat) error {
 	log.Println("Generating pb files...")
 	for _, v := range protoMap {
 
-		// err := generatePbFiles(path, k, v)
+		err := generatePbFiles(path, k, v)
+		if err != nil {
+			return err
+		}
+
+		log.Println("Getting proto data...")
+		// pdArr, err := getProtoData(string(v.protoContent), v.protoFileName, filepath.Join(path, v.flowName, v.activityName), v.activityName)
 		// if err != nil {
 		// 	return err
 		// }
 
-		log.Println("Getting proto data...")
-		pdArr, err := getProtoData(string(v.protoContent), v.protoFileName, filepath.Join(path, v.flowName, v.activityName), v.activityName)
-		if err != nil {
-			return err
-		}
-
 		log.Println("pdArr: %v", pdArr)
 
 		// refactoring streaming methods and unary methods
-		pdArr = arrangeProtoData(pdArr)
+		// pdArr = arrangeProtoData(pdArr)
 		fmt.Println("Creating client support files...")
-		err = generateServiceImplFile(path, pdArr, "client", v)
-		if err != nil {
-			return err
-		}
+		// err = generateServiceImplFile(path, pdArr, "client", v)
+		// if err != nil {
+		// 	return err
+		// }
 
 		log.Println("Support files created.")
 	}
@@ -542,7 +542,7 @@ func Exec(dirToGenerate, name string, arg ...string) error {
 }
 
 // generatePbFiles generates stub file based on given proto
-func generatePbFiles(appPath, protoFileContent string, loc *ProtoLocat) error {
+func generatePbFiles(appPath, protoName string, loc *ProtoLocat) error {
 	_, err := exec.LookPath("protoc")
 	if err != nil {
 		return fmt.Errorf("Protoc is not available: %s", err.Error())
@@ -553,18 +553,12 @@ func generatePbFiles(appPath, protoFileContent string, loc *ProtoLocat) error {
 		_ = os.MkdirAll(dir2Generate, 0775)
 	}
 
-	if loc.protoFileContentType == "content" {
-		err = ioutil.WriteFile(filepath.Join(dir2Generate, loc.protoFileName), []byte(protoFileContent), 0644)
-		if err != nil {
-			return err
-		}
-	} else {
-		protoContent, err := ioutil.ReadFile(protoFileContent)
-		err = ioutil.WriteFile(filepath.Join(dir2Generate, loc.protoFileName), protoContent, 0644)
-		if err != nil {
-			return err
-		}
+
+	err = ioutil.WriteFile(filepath.Join(dir2Generate, loc.protoFileName), loc.protoContent, 0644)
+	if err != nil {
+		return err
 	}
+	
 
 	// execute protoc command
 	err = Exec(dir2Generate, "protoc", "-I", "$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/", "-I", dir2Generate, filepath.Join(dir2Generate, loc.protoFileName), "--go_out="+dir2Generate)
