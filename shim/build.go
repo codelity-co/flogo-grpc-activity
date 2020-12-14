@@ -315,7 +315,7 @@ func main() {
 		return
 	}
 
-	log.Println(fmt.Sprintf("m: %v", m))
+	fmt.Println(fmt.Sprintf("m: %v", m))
 
 	// Generate support files
 	// err = GenerateSupportFiles(appPath, m)
