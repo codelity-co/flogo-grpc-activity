@@ -456,7 +456,7 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 						//Get protco file
 						loc := &ProtoLocat{flowName: strings.ToLower(v.Data.Name), activityName: strings.ToLower(act.Name)}
 						if _, exists := protoMap[act.ActivityCfgRep.Settings["protoName"].(string)]; !exists {
-							loc.protoName := act.ActivityCfgRep.Settings["protoName"].(string)
+							loc.protoName = act.ActivityCfgRep.Settings["protoName"].(string)
 							loc.protoFileName = loc.protoName + ".proto"
 							if protoF, okk := act.ActivityCfgRep.Settings["protoFile"].(map[string]interface{}); okk {
 								// decode protoFile content
