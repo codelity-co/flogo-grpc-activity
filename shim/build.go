@@ -492,7 +492,7 @@ func GenerateSupportFiles(path string, protoMap map[string]*ProtoLocat) error {
 		// }
 
 		log.Println("Getting proto data...")
-		pdArr, err := getProtoData(v.protoContent, v.protoFileName, filepath.Join(path, v.flowName, v.activityName), v.activityName)
+		pdArr, err := getProtoData(string(v.protoContent), v.protoFileName, filepath.Join(path, v.flowName, v.activityName), v.activityName)
 		if err != nil {
 			return err
 		}
