@@ -1,7 +1,7 @@
 {
   "name": "flogo-grpc-activity",
   "type": "flogo:activity",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "title": "Codelity Flogo gRPC activity",
   "description": "Codelity Flogo gRPC activity",
   "homepage": "https://github.com/codelity-co/flogo-grpc-activity",
