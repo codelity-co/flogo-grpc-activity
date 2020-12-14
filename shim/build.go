@@ -288,6 +288,7 @@ type ProtoData struct {
 	ProtoName              string
 	Option                 string
 	Stream                 bool
+	ProtoFileName          string
 }
 
 var GRPC_CLIENT_REF = "github.com/codelity-co/flogo-grpc-activity"
@@ -314,8 +315,6 @@ func main() {
 		log.Println(fmt.Errorf("Ger proto file error: %s", err.Error()))
 		return
 	}
-
-	fmt.Println(fmt.Sprintf("m: %v", m))
 
 	// Generate support files
 	err = GenerateSupportFiles(appPath, m)
@@ -501,12 +500,10 @@ func GenerateSupportFiles(path string, protoMap map[string]*ProtoLocat) error {
 		// }
 
 		log.Println("Getting proto data...")
-		pdArr, err := getProtoData(string(v.protoContent), v.protoFileName, filepath.Join(path, v.flowName, v.activityName), v.activityName)
+		pdArr, err := getProtoData(string(v.protoContent), v.protoName, v.protoFileName, filepath.Join(path, v.flowName, v.activityName), v.activityName)
 		if err != nil {
 			return err
 		}
-
-		log.Println("pdArr: %v", pdArr)
 
 		// refactoring streaming methods and unary methods
 		pdArr = arrangeProtoData(pdArr)
@@ -602,7 +599,7 @@ func arrangeProtoData(pdArr []ProtoData) []ProtoData {
 }
 
 // getProtoData reads proto and returns proto data present in proto file
-func getProtoData(protoContent string, protoName string, protoPath string, activityName string) ([]ProtoData, error) {
+func getProtoData(protoContent string, protoName string, protoFileName string, protoPath string, activityName string) ([]ProtoData, error) {
 	var regServiceName string
 	var methodInfoList []MethodInfoTree
 	var ProtodataArr []ProtoData
@@ -633,12 +630,13 @@ func getProtoData(protoContent string, protoName string, protoPath string, activ
 			methodInfoList = append(methodInfoList, methodInfo)
 		}
 		protodata := ProtoData{
-			Package:        strings.Split(protoName,".")[0],
+			Package:        protoName,
 			AllMethodInfo:  methodInfoList,
 			Timestamp:      time.Now(),
 			ProtoImpPath:   protoPath,
 			RegServiceName: regServiceName,
 			ProtoName:      protoName,
+			ProtoFileName:  protoFileName,
 		}
 
 		ProtodataArr = append(ProtodataArr, protodata)
