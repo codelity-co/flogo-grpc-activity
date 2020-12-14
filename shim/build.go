@@ -414,13 +414,11 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 						}
 						protoMap[string(protoContent)] = loc
 					} else {
-						// text box
-						loc.protoFileName = act.ActivityCfgRep.Settings["protoName"].(string) + ".proto"
-						protoContent, err = ioutil.ReadFile(act.ActivityCfgRep.Settings["protoFile"].(string))
-						if err != nil {
-							panic(fmt.Errorf("Error reading json file: %s", err.Error()))
-						}
-						protoMap[act.ActivityCfgRep.Settings["protoName"].(string)] = loc
+						protoFileName := act.ActivityCfgRep.Settings["protoName"].(string) + ".proto"
+						loc.protoFileName = protoFileName
+
+						protoContent = []byte(act.ActivityCfgRep.Settings["protoFile"].(string))
+						protoMap[string(protoContent)] = loc
 					}
 				}
 			}
