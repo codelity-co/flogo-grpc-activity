@@ -657,7 +657,7 @@ func generateServiceImplFile(path string, pdArr []ProtoData, option string, loc 
 		_ = os.MkdirAll(path, os.ModePerm)
 	}
 	for _, pd := range pdArr {
-		connectorFile := filepath.Join(path, loc.GetLocation(), strings.Split(loc.protoFileName, ".")[0]+"."+pd.RegServiceName+"."+option+".grpcservice.go")
+		connectorFile := filepath.Join(path, loc.protoName+"."+pd.RegServiceName+"."+option+".grpcservice.go")
 		f, err := os.Create(connectorFile)
 		if err != nil {
 			log.Fatal("Error: ", err)
