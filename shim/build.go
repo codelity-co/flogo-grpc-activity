@@ -633,7 +633,7 @@ func getProtoData(protoContent string, protoName string, protoPath string, activ
 			methodInfoList = append(methodInfoList, methodInfo)
 		}
 		protodata := ProtoData{
-			Package:        protoName,
+			Package:        strings.Split(protoName,".")[0],
 			AllMethodInfo:  methodInfoList,
 			Timestamp:      time.Now(),
 			ProtoImpPath:   protoPath,
