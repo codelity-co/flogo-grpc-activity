@@ -397,10 +397,18 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 
 	protoMap := make(map[string]*ProtoLocat)
 
+	fmt.Println("loop all resources")
 	for _, v := range app.Resources {
+
 		//Tasks
 		var protoContent []byte
+
+		fmt.Println("loop resource tasks")
+
 		for _, act := range v.Data.Tasks {
+
+			fmt.Println("Get activity")
+
 			if strings.HasPrefix(act.ActivityCfgRep.Ref, "#") {
 				if app.GetRef(act.ActivityCfgRep.Ref[1:]) == GRPC_CLIENT_REF {
 					//Get protco file
@@ -440,7 +448,7 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 		//Error Handlers
 		//Tasks
 		if v.Data.ErrorHandler != nil {
-
+			fmt.Println("Found Error Handler")
 			for _, act := range v.Data.ErrorHandler.Tasks {
 				if strings.HasPrefix(act.ActivityCfgRep.Ref, "#") {
 					if app.GetRef(act.ActivityCfgRep.Ref[1:]) == GRPC_CLIENT_REF {
