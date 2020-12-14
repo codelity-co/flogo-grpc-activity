@@ -484,7 +484,7 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 func GenerateSupportFiles(path string, protoMap map[string]*ProtoLocat) error {
 
 	log.Println("Generating pb files...")
-	for k, v := range protoMap {
+	for _, v := range protoMap {
 
 		// err := generatePbFiles(path, k, v)
 		// if err != nil {
