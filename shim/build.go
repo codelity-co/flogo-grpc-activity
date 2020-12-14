@@ -314,14 +314,17 @@ func main() {
 		log.Println(fmt.Errorf("Ger proto file error: %s", err.Error()))
 		return
 	}
+
+	log.Println(fmt.Sprintf("m: %v", m))
+	
 	// Generate support files
-	err = GenerateSupportFiles(appPath, m)
-	if err != nil {
-		panic(err)
-	}
+	// err = GenerateSupportFiles(appPath, m)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	// cleanup build.go, shim_support.go and <fileName>.proto
-	os.Remove(filepath.Join(appPath, "build.go"))
+	// os.Remove(filepath.Join(appPath, "build.go"))
 	log.Println("Completed build!")
 }
 
@@ -336,10 +339,11 @@ type resource struct {
 }
 
 type ProtoLocat struct {
-	protoFileName        string
+	protoName            string
 	flowName             string
 	activityName         string
 	protoFileContentType string
+	protoContent         []byte
 }
 
 func (p *ProtoLocat) GetLocation() string {
@@ -401,28 +405,34 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 				if app.GetRef(act.ActivityCfgRep.Ref[1:]) == GRPC_CLIENT_REF {
 					//Get protco file
 					loc := &ProtoLocat{flowName: strings.ToLower(v.Data.Name), activityName: strings.ToLower(act.Name)}
-					if protoF, okk := act.ActivityCfgRep.Settings["protoFile"].(map[string]interface{}); okk {
-						loc.protoFileContentType = "content"
-						// file picker
-						protoFileName := protoF["filename"].(string)
-						loc.protoFileName = protoFileName
-						// decode protoFile content
-						protoContentValue := protoF["content"].(string)
-						index := strings.IndexAny(protoContentValue, ",")
-						if index > -1 {
-							protoContent, _ = base64.StdEncoding.DecodeString(protoContentValue[index+1:])
-						} else {
-							panic("Error in proto content")
-						}
-						protoMap[string(protoContent)] = loc
-					} else {
-						loc.protoFileContentType = "file"
-						protoFileName := act.ActivityCfgRep.Settings["protoName"].(string) + ".proto"
-						loc.protoFileName = protoFileName
+					if _, exists := protoMap[act.ActivityCfgRep.Settings["protoName"].(string)]; !exists {
+						protoName := act.ActivityCfgRep.Settings["protoName"].(string)
+						loc.protoFileName = protoName + ".proto"
+						if protoF, okk := act.ActivityCfgRep.Settings["protoFile"].(map[string]interface{}); okk {
+							loc.protoFileContentType = "content"
+							// decode protoFile content
+							protoContentValue := protoF["content"].(string)
+							index := strings.IndexAny(protoContentValue, ",")
 
-						protoContent = []byte(act.ActivityCfgRep.Settings["protoFile"].(string))
-						protoMap[string(protoContent)] = loc
+							var protoContent []byte
+							if index > -1 {
+								protoContent, _ = base64.StdEncoding.DecodeString(protoContentValue[index+1:])
+							} else {
+								panic("Error in proto content")
+							}
+							loc.protoContent = protoContent
+							protoMap[protoName] = loc
+						} else {
+							loc.protoFileContentType = "file"
+							protoContent, err = ioutil.ReadFile(act.ActivityCfgRep.Settings["protoFile"].(string))
+							if err != nil {
+								panic(err)
+							}
+							loc.protoContent = protoContent
+							protoMap[protoName] = loc
+						}
 					}
+
 				}
 			}
 		}
@@ -448,14 +458,19 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 							} else {
 								panic("Error in proto content")
 							}
-							protoMap[string(protoContent)] = loc
+
+							loc.protoContent = protoContent
+							protoMap[loc.protoFileName] = loc
 						} else {
 							// text box
-							protoFileName := act.ActivityCfgRep.Settings["protoName"].(string) + ".proto"
+							protoFileName := act.ActivityCfgRep.Settings["protoName"].(string)
 							loc.protoFileName = protoFileName
-
-							protoContent = []byte(act.ActivityCfgRep.Settings["protoFile"].(string))
-							protoMap[string(protoContent)] = loc
+							protoContent, err = ioutil.ReadFile(act.ActivityCfgRep.Settings["protoFile"].(string))
+							if err != nil {
+								panic(err)
+							}
+							loc.protoContent = protoContent
+							protoMap[protoFileName] = loc
 						}
 					}
 				}
@@ -479,7 +494,7 @@ func GenerateSupportFiles(path string, protoMap map[string]*ProtoLocat) error {
 		// }
 
 		log.Println("Getting proto data...")
-		pdArr, err := getProtoData(k, v.protoFileName, filepath.Join(path, v.flowName, v.activityName), v.activityName)
+		pdArr, err := getProtoData(v.protoContent, v.protoFileName, filepath.Join(path, v.flowName, v.activityName), v.activityName)
 		if err != nil {
 			return err
 		}
@@ -498,12 +513,13 @@ func GenerateSupportFiles(path string, protoMap map[string]*ProtoLocat) error {
 	}
 
 	//Create an import file to import all generated files
-	grpcImportFile, err := os.Create(filepath.Join(path, "grpcimports.go"))
-	if err != nil {
-		return err
-	}
+	// grpcImportFile, err := os.Create(filepath.Join(path, "grpcimports.go"))
+	// if err != nil {
+	// 	return err
+	// }
 
-	return ImportTemplate.Execute(grpcImportFile, protoMap)
+	// return ImportTemplate.Execute(grpcImportFile, protoMap)
+	return nil
 }
 
 // Exec executes a command within the build context.
@@ -587,7 +603,7 @@ func arrangeProtoData(pdArr []ProtoData) []ProtoData {
 }
 
 // getProtoData reads proto and returns proto data present in proto file
-func getProtoData(protoContent string, protoFileName string, protoPath string, activityName string) ([]ProtoData, error) {
+func getProtoData(protoContent string, protoName string, protoPath string, activityName string) ([]ProtoData, error) {
 	var regServiceName string
 	var methodInfoList []MethodInfoTree
 	var ProtodataArr []ProtoData
@@ -623,7 +639,7 @@ func getProtoData(protoContent string, protoFileName string, protoPath string, a
 			Timestamp:      time.Now(),
 			ProtoImpPath:   protoPath,
 			RegServiceName: regServiceName,
-			ProtoName:      strings.Split(protoFileName, ".")[0],
+			ProtoName:      protoName,
 		}
 
 		ProtodataArr = append(ProtodataArr, protodata)
