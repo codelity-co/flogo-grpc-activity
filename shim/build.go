@@ -264,7 +264,7 @@ import (
 )
 `
 
-var ImportTamplate = template.Must(template.New("").Parse(importContent))
+var ImportTemplate = template.Must(template.New("").Parse(importContent))
 
 // MethodInfoTree holds method information
 type MethodInfoTree struct {
@@ -472,16 +472,20 @@ func GenerateSupportFiles(path string, protoMap map[string]*ProtoLocat) error {
 
 	log.Println("Generating pb files...")
 	for k, v := range protoMap {
-		err := generatePbFiles(path, k, v)
-		if err != nil {
-			return err
-		}
+
+		// err := generatePbFiles(path, k, v)
+		// if err != nil {
+		// 	return err
+		// }
 
 		log.Println("Getting proto data...")
 		pdArr, err := getProtoData(k, v.protoFileName, filepath.Join(path, v.flowName, v.activityName), v.activityName)
 		if err != nil {
 			return err
 		}
+
+		log.Println("pdArr: %v", pdArr)
+
 		// refactoring streaming methods and unary methods
 		pdArr = arrangeProtoData(pdArr)
 		fmt.Println("Creating client support files...")
@@ -498,7 +502,8 @@ func GenerateSupportFiles(path string, protoMap map[string]*ProtoLocat) error {
 	if err != nil {
 		return err
 	}
-	return ImportTamplate.Execute(grpcImportFile, protoMap)
+
+	return ImportTemplate.Execute(grpcImportFile, protoMap)
 }
 
 // Exec executes a command within the build context.
