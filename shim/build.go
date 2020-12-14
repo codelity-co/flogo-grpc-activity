@@ -492,20 +492,20 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 func GenerateSupportFiles(path string, protoMap map[string]*ProtoLocat) error {
 
 	log.Println("Generating pb files...")
-	for _, v := range protoMap {
+	for k, v := range protoMap {
 
 		err := generatePbFiles(path, k, v)
 		if err != nil {
 			return err
 		}
 
-		log.Println("Getting proto data...")
+		// log.Println("Getting proto data...")
 		// pdArr, err := getProtoData(string(v.protoContent), v.protoFileName, filepath.Join(path, v.flowName, v.activityName), v.activityName)
 		// if err != nil {
 		// 	return err
 		// }
 
-		log.Println("pdArr: %v", pdArr)
+		// log.Println("pdArr: %v", pdArr)
 
 		// refactoring streaming methods and unary methods
 		// pdArr = arrangeProtoData(pdArr)
