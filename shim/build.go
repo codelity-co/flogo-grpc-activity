@@ -336,9 +336,10 @@ type resource struct {
 }
 
 type ProtoLocat struct {
-	protoFileName string
-	flowName      string
-	activityName  string
+	protoFileName        string
+	flowName             string
+	activityName         string
+	protoFileContentType string
 }
 
 func (p *ProtoLocat) GetLocation() string {
@@ -401,6 +402,7 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 					//Get protco file
 					loc := &ProtoLocat{flowName: strings.ToLower(v.Data.Name), activityName: strings.ToLower(act.Name)}
 					if protoF, okk := act.ActivityCfgRep.Settings["protoFile"].(map[string]interface{}); okk {
+						loc.protoFileContentType = "content"
 						// file picker
 						protoFileName := protoF["filename"].(string)
 						loc.protoFileName = protoFileName
@@ -414,13 +416,11 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 						}
 						protoMap[string(protoContent)] = loc
 					} else {
+						loc.protoFileContentType = "file"
 						protoFileName := act.ActivityCfgRep.Settings["protoName"].(string) + ".proto"
 						loc.protoFileName = protoFileName
 
-						protoContent, err = ioutil.ReadFile((act.ActivityCfgRep.Settings["protoFile"].(string))
-						if err != nil {
-							panic(err)
-						}
+						protoContent = []byte(act.ActivityCfgRep.Settings["protoFile"].(string))
 						protoMap[string(protoContent)] = loc
 					}
 				}
@@ -471,11 +471,7 @@ func GetAllProtoFileFromgRPCClientActivity(flogoJsonPath string) (map[string]*Pr
 func GenerateSupportFiles(path string, protoMap map[string]*ProtoLocat) error {
 
 	log.Println("Generating pb files...")
-	log.Println(fmt.Sprintf("protoMap: %v", protoMap))
 	for k, v := range protoMap {
-		log.Println(fmt.Sprintf("k: %v", k))
-		log.Println(fmt.Sprintf("v: %v", v))
-		log.Println(fmt.Sprintf("path: %v", path))
 		err := generatePbFiles(path, k, v)
 		if err != nil {
 			return err
@@ -530,10 +526,19 @@ func generatePbFiles(appPath, protoFileContent string, loc *ProtoLocat) error {
 		_ = os.MkdirAll(dir2Generate, 0775)
 	}
 
-	err = ioutil.WriteFile(filepath.Join(dir2Generate, loc.protoFileName), []byte(protoFileContent), 0644)
-	if err != nil {
-		return err
+	if loc.protoFileContentType == "content" {
+		err = ioutil.WriteFile(filepath.Join(dir2Generate, loc.protoFileName), []byte(protoFileContent), 0644)
+		if err != nil {
+			return err
+		}
+	} else {
+		protoContent, err := ioutil.ReadFile(protoFileContent)
+		err = ioutil.WriteFile(filepath.Join(dir2Generate, loc.protoFileName), protoContent, 0644)
+		if err != nil {
+			return err
+		}
 	}
+
 	// execute protoc command
 	err = Exec(dir2Generate, "protoc", "-I", "$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/", "-I", dir2Generate, filepath.Join(dir2Generate, loc.protoFileName), "--go_out="+dir2Generate)
 	if err != nil {
